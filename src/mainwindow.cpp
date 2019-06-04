@@ -21,8 +21,8 @@ MainWindow::~MainWindow() {
 }
 
 void MainWindow::generateGrid(int size) {
-    if (size % 3 != 0) {
-        qCritical() << "Grid size not divisible by 3!";
+    if (size != 9) {
+        qCritical() << "Undefined behaviour for grid sizes other than 9!";
         return;
     }
 
@@ -43,7 +43,7 @@ void MainWindow::generateGrid(int size) {
             QFrame *widget = new QFrame;
             widget->setFrameShape(QFrame::Box);
 
-            int widgetSize = CellSize * 3 + 2; // 2 for border spaces
+            int widgetSize = CellSize * sectionSize + 2; // 2 for border spaces
             widget->setMinimumSize(widgetSize, widgetSize);
             widget->setMaximumSize(widgetSize, widgetSize);
 
