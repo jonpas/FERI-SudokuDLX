@@ -16,6 +16,8 @@ class MainWindow : public QMainWindow {
     Q_OBJECT
 
 public:
+    static const QSize CellSize;
+
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
@@ -25,4 +27,7 @@ private:
     Ui::MainWindow *ui;
 
     Grid grid;
+
+private slots:
+    void on_cell_textEdited(const QString &text);
 };
