@@ -2,7 +2,8 @@
 #include "ui_mainwindow.h"
 
 #include <QValidator>
-#include <QLabel>
+
+#include <chrono>
 
 const int MainWindow::CellSize = 50;
 
@@ -32,7 +33,7 @@ void MainWindow::generateGrid(int size) {
     // For later population (different order, as we add section by section)
     grid.reserve(size * size);
     for (int i = 0; i < size; ++i) {
-        grid.append(GridRow());
+        grid.append(SudokuGridRow());
     }
 
     // Add section by section and fill with cells
@@ -80,7 +81,7 @@ void MainWindow::generateGrid(int size) {
 
 void MainWindow::fillGridWithTestData() {
     if (grid.size() == 9) {
-        int testData[9][9] = {
+        int test[9][9] = {
             { 0,0,0,  0,0,0,  0,0,0 },
             { 0,0,0,  0,0,3,  0,8,5 },
             { 0,0,1,  0,2,0,  0,0,0 },
@@ -96,12 +97,48 @@ void MainWindow::fillGridWithTestData() {
 
         for (int i = 0; i < 9; ++i) {
             for (int j = 0; j < 9; ++j) {
-                if (testData[i][j] != 0) {
-                    int data = testData[i][j];
-                    grid[i][j]->setText(QString::number(data));
-                }
+                setCellValue(grid[i][j], test[i][j]);
             }
         }
+    }
+}
+
+Grid MainWindow::sudokuGridToGrid() const {
+    Grid sudoku;
+    sudoku.reserve(grid.size());
+
+    for (auto &row : grid) {
+        GridRow sudokuRow;
+        for (auto &cell : row) {
+            sudokuRow.append(cellValue(cell));
+        }
+        sudoku.append(sudokuRow);
+    }
+
+    return sudoku;
+}
+
+void MainWindow::gridToSudokuGrid(Grid sudoku) {
+    for (int i = 0; i < sudoku.size(); ++i) {
+        for (int j = 0; j < sudoku[i].size(); ++j) {
+            setCellValue(grid[i][j], sudoku[i][j]);
+        }
+    }
+}
+
+// UI input getters/setters
+int MainWindow::cellValue(QLineEdit *cell) const {
+    if (cell->text() == "") {
+        return 0;
+    }
+    return cell->text().toInt();
+}
+
+void MainWindow::setCellValue(QLineEdit *cell, int value) {
+    if (value < 1) {
+        cell->setText("");
+    } else {
+        cell->setText(QString::number(value));
     }
 }
 
@@ -111,7 +148,7 @@ void MainWindow::onCellTextEdited(const QString &text) {
     if (text.toInt() < 1) {
         for (auto &row : grid) {
             for (auto &cell : row) {
-                if (cell->text() != "" && cell->text().toInt() < 1) {
+                if (cellValue(cell) != 0) {
                     cell->setText("1");
                 }
             }
@@ -128,11 +165,22 @@ void MainWindow::on_pushButtonReset_clicked() {
 }
 
 void MainWindow::on_pushButtonSolve_clicked() {
-    // Convert Sudoku grid to exact cover problem
-    ExactCoverBuilder ecBuilder();
-    //ecBuilder->build();
+    // Convert input data to primitive data
+    // Instantiate DLX solver
+    DLX dlx(sudokuGridToGrid());
 
-    // Solve using Dancing Links / Algorithm X (DLX)
-    DLX dlx();
-    //dlx->solve();
+    // Solve (convert problem to exact cover problem and solve with DLX)
+    auto benchStart = std::chrono::high_resolution_clock::now();
+    bool solved = dlx.solve();
+    auto benchEnd = std::chrono::high_resolution_clock::now();
+
+    if (solved) {
+        // Apply to UI
+        gridToSudokuGrid(dlx.solution());
+
+        double bench = std::chrono::duration<double>(benchEnd - benchStart).count();
+        ui->statusBar->showMessage("Solved in " + QString::number(bench) + " seconds!");
+    } else {
+        ui->statusBar->showMessage("No solution!");
+    }
 }

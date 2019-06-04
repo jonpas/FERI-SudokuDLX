@@ -5,11 +5,10 @@
 
 #include <QDebug>
 
-#include "exactcoverbuilder.h"
 #include "dlx.h"
 
-using GridRow = QList<QLineEdit *>;
-using Grid = QList<GridRow>;
+using SudokuGridRow = QList<QLineEdit *>;
+using SudokuGrid = QList<SudokuGridRow>;
 
 namespace Ui {
 class MainWindow;
@@ -24,13 +23,20 @@ public:
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
-    void generateGrid(int size);
-    void fillGridWithTestData();
-
 private:
     Ui::MainWindow *ui;
+    SudokuGrid grid;
 
-    Grid grid;
+    void generateGrid(int size);
+    void fillGridWithTestData();
+    // Converts Sudoku input grid (UI) to int grid (DLX)
+    Grid sudokuGridToGrid() const;
+    // Applies int grid (DLX) to Sudoku input grid (UI)
+    void gridToSudokuGrid(Grid sudoku);
+
+    // UI input getters/setters
+    int cellValue(QLineEdit *cell) const;
+    void setCellValue(QLineEdit *cell, int value);
 
 private slots:
     void onCellTextEdited(const QString &text);

@@ -11,13 +11,11 @@ CONFIG += c++11
 
 SOURCES += \
     dlx.cpp \
-    exactcoverbuilder.cpp \
     main.cpp \
     mainwindow.cpp
 
 HEADERS += \
     dlx.h \
-    exactcoverbuilder.h \
     mainwindow.h
 
 FORMS += \
