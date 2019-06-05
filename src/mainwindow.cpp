@@ -176,7 +176,7 @@ void MainWindow::on_pushButtonSolve_clicked() {
 
     if (solved) {
         // Apply to UI
-        gridToSudokuGrid(dlx.solution());
+        gridToSudokuGrid(dlx.solvedGrid());
 
         double bench = std::chrono::duration<double>(benchEnd - benchStart).count();
         ui->statusBar->showMessage("Solved in " + QString::number(bench) + " seconds!");
