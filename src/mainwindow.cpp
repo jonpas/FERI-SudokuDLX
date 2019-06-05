@@ -13,7 +13,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
 
     generateGrid(9);
 
-    // Debug
+    // Unit tests
     runTests();
 }
 
