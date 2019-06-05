@@ -5,15 +5,17 @@
 const int DLX::MaxSearchDepth = 1000;
 
 DLX::DLX(Grid sudoku) : sudoku(sudoku) {
-    // Frequently used size variations
+    // Frequently used size variations - Reference DLX::buildSparseMatrix()
     size = sudoku.size();
     sizeSq = size * size;
     sizeSqrt = static_cast<int>(sqrt(size));
-    rows = sudoku.size() * sudoku.size() * sudoku.size();
-    columns = 4 * sudoku.size() * sudoku.size();
+    rows = size * size * size;
+    columns = 4 * size * size;
 
     // Initialize
-    solutions.reserve(MaxSearchDepth);
+    nodesToClean.reserve(columns * (size + 1)); // 9x9 => 324 * (9 + 1)
+    solutions.reserve(MaxSearchDepth); // Maximum
+    origValues.reserve(sizeSq); // Maximum: 9x9 => 81
 
     matrix.reserve(rows);
     for (int i = 0; i < rows; ++i) {
@@ -23,8 +25,6 @@ DLX::DLX(Grid sudoku) : sudoku(sudoku) {
         }
         matrix.append(row);
     }
-
-    nodesToClean.reserve(columns * 10); // Approximation
 }
 
 DLX::~DLX() {
