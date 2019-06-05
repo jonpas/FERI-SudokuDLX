@@ -75,9 +75,15 @@ void DLX::uncoverColumn(Node *column) {
 }
 
 bool DLX::search(int depth) {
+    // Map solution back to grid and exit if solution found
     if (head->right == head) {
         mapSolutionToGrid();
         return true;
+    }
+
+    // Exit if maximum depth reached
+    if (depth >= MaxSearchDepth) {
+        return false;
     }
 
     // Choose column with smallest size (deterministically)
@@ -98,7 +104,10 @@ bool DLX::search(int depth) {
             coverColumn(node->head);
         }
 
+        // Search next depth (recursion)
+        // Exit if failed
         solved = search(depth + 1);
+        if (!solved) break;
 
         tmp = solution[depth];
         solution[depth] = nullptr;
