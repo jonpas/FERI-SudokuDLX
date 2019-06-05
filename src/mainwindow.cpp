@@ -99,7 +99,7 @@ bool MainWindow::solveGrid(double &bench) {
 
     if (solved) {
         // Apply to UI
-        gridToUIGrid(dlx.solvedGrid());
+        gridToUIGrid(dlx.solution());
 
         bench = std::chrono::duration<double, std::milli>(benchEnd - benchStart).count();
     }

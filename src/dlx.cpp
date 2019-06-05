@@ -13,10 +13,7 @@ DLX::DLX(Grid sudoku) : sudoku(sudoku) {
     columns = 4 * sudoku.size() * sudoku.size();
 
     // Initialize
-    solution.reserve(MaxSearchDepth);
-    for (int i = 0; i < MaxSearchDepth; ++i) {
-        solution.append(nullptr);
-    }
+    solutions.reserve(MaxSearchDepth);
 
     matrix.reserve(rows);
     for (int i = 0; i < rows; ++i) {
@@ -41,20 +38,22 @@ DLX::~DLX() {
 bool DLX::solve() {
     buildSparseMatrix();
     buildLinkedList();
-    transformListToCurrentGrid();
+    coverGridValues();
     return search();
 }
 
-Grid DLX::solvedGrid() {
+Grid DLX::solution() {
     mapSolutionToGrid();
     return sudoku;
 }
 
 // DLX
 void DLX::coverColumn(Node *column) {
+    // Remove column
     column->left->right = column->right;
     column->right->left = column->left;
 
+    // Remove all rows in the column from other columns they are in
     for (Node *node = column->down; node != column; node = node->down) {
         for (Node *tmp = node->right; tmp != node; tmp = tmp->right) {
             tmp->up->down = tmp->down;
@@ -65,6 +64,9 @@ void DLX::coverColumn(Node *column) {
 }
 
 void DLX::uncoverColumn(Node *column) {
+    // Take advantage of the fact that every node that has been removed retains information about its neighbors
+
+    // Re-add all rows in the column from other columns they were in
     for (Node *node = column->up; node != column; node = node->up) {
         for (Node *tmp = node->left; tmp != node; tmp = tmp->left) {
             ++tmp->head->size;
@@ -73,6 +75,7 @@ void DLX::uncoverColumn(Node *column) {
         }
     }
 
+    // Re-add column
     column->left->right = column;
     column->right->left = column;
 }
@@ -83,21 +86,16 @@ bool DLX::search(int depth) {
         return true;
     }
 
-    // Choose column with smallest size (deterministically)
-    Node *column = head->right;
-    for (Node *tmp = column->right; tmp != head; tmp = tmp->right) {
-        if (tmp->size < column->size) {
-            column = tmp;
-        }
-    }
-
+    // Cover next column (with least number of nodes or the right one)
+    Node *column = chooseNextColumn();
     coverColumn(column);
 
-    for (Node *tmp = column->down; tmp != column; tmp = tmp->down) {
-        solution[depth] = tmp;
+    for (Node *row = column->down; row != column; row = row->down) {
+        solutions.append(row);
 
-        for (Node *node = tmp->right; node != tmp; node = node->right) {
-            coverColumn(node->head);
+        // Cover to the right
+        for (Node *right = row->right; right != row; right = right->right) {
+            coverColumn(right->head);
         }
 
         // Search next depth (recursion) and exit if solved
@@ -105,15 +103,17 @@ bool DLX::search(int depth) {
             return true;
         }
 
-        tmp = solution.at(depth);
-        solution[depth] = nullptr;
-        column = tmp->head;
+        // Remove last solution (backtrack)
+        solutions.removeOne(row);
+        column = row->head;
 
-        for (Node * node = tmp->left; node != tmp; node = node->left) {
-            uncoverColumn(node->head);
+        // Uncover to the left (backtrack)
+        for (Node *left = row->left; left != row; left = left->left) {
+            uncoverColumn(left->head);
         }
     }
 
+    // Uncover last column (backtrack)
     uncoverColumn(column);
 
     // Not yet solved
@@ -126,18 +126,23 @@ void DLX::buildSparseMatrix() {
     int j = 0;
     int x = 0;
 
-    // Constraint 1 - Only one value in any given cell
+    // Sparse Matrix:
+    // Columns: Constraints of the puzzle (4 per number)
+    // - Each number has its own set of constraints => size ^ 2 * 4 columns (9x9 => 324 columns)
+    // Rows: Every position for every number => size ^ 3 rows (9x9 = 729 rows)
+    // - Each row represents only one candidate position => 4 1s in a row, representing constraints of that position
+
+    // Constraint 1: Position - Only one number in single cell
     for (int i = 0; i < matrix.size(); ++i) {
         matrix[i][j] = true;
 
-        ++counter;
-        if (counter >= sudoku.size()) {
+        if (++counter >= sudoku.size()) {
             ++j;
             counter = 0;
         }
     }
 
-    // Constraint 2 - Only one instance of a number in single row
+    // Constraint 2: Row - Only one instance of a number in single row
     counter = 1;
     for (j = sizeSq; j < 2 * sizeSq; ++j) {
         for (int i = x; i < counter * sizeSq; i += size) {
@@ -152,18 +157,17 @@ void DLX::buildSparseMatrix() {
         }
     }
 
-    // Constraint 3 - Only one instance of a number in single column
+    // Constraint 3: Column - Only one instance of a number in single column
     j = 2 * sizeSq;
     for (int i = 0; i < rows; ++i) {
         matrix[i][j] = true;
-        ++j;
 
-        if (j >= 3 * sizeSq) {
+        if (++j >= 3 * sizeSq) {
             j = 2 * sizeSq;
         }
     }
 
-    // Constraint 4 - Only one instance of a number in given region (at 9x9, region is 3x3)
+    // Constraint 4: Region - Only one instance of a number in single region (at 9x9, region is 3x3)
     x = 0;
     for (j = 3 * sizeSq; j < columns; ++j) {
         for (int l = 0; l < sizeSqrt; ++l) {
@@ -184,6 +188,7 @@ void DLX::buildSparseMatrix() {
 }
 
 void DLX::buildLinkedList() {
+    // Create head
     head = new Node;
     head->up = head;
     head->down = head;
@@ -192,29 +197,27 @@ void DLX::buildLinkedList() {
     head->size = -1;
     head->head = head;
 
-    Node *tmp = head;
-
     // Create all column nodes
-    for (int i = 0; i < columns; ++i) {
+    Node *right = head;
+    for (int i = 0; i < columns; ++i, right = right->right) {
         Node *node = new Node;
         nodesToClean.append(node);
         node->size = 0;
+
+        // Link to all sides
         node->up = node;
         node->down = node;
-        node->left = tmp;
+        node->left = right;
         node->right = head;
         node->head = node;
-        tmp->right = node;
-        tmp = node;
+        right->right = node;
     }
 
     GridRow id = {0, 1, 1};
 
     // Add a node for each 'true' present in sparse matrix and update column nodes accordingly
     for (int i = 0; i < rows; ++i) {
-        Node *top = head->right;
-        Node *prev = nullptr;
-
+        // Update row identification
         if (i != 0 && i % sizeSq == 0) {
             id[0] -= size - 1;
             ++id[1];
@@ -226,17 +229,23 @@ void DLX::buildLinkedList() {
             ++id[0];
         }
 
+        // Update column nodes according to sparse matrix value
+        Node *top = head->right;
+        Node *prev = nullptr;
         for (int j = 0; j < columns; ++j, top = top->right) {
+            // Add node for each 'true' sparse matrix value
             if (matrix.at(i).at(j)) {
                 Node *node = new Node;
                 nodesToClean.append(node);
                 node->row = id;
 
+                // First node in row
                 if (prev == nullptr) {
                     prev = node;
                     prev->right = node;
                 }
 
+                // Link to all sides
                 node->left = prev;
                 node->right = prev->right;
                 node->right->left = node;
@@ -249,6 +258,7 @@ void DLX::buildLinkedList() {
                 ++top->size;
                 top->up = node;
 
+                // Insert into column
                 if (top->down == top) {
                     top->down = node;
                 }
@@ -258,9 +268,10 @@ void DLX::buildLinkedList() {
     }
 }
 
-void DLX::transformListToCurrentGrid() {
+void DLX::coverGridValues() {
     for (int i = 0; i < size; ++i) {
         for (int j = 0; j < size; ++j) {
+            // Cover column of value already present in the grid
             if (sudoku.at(i).at(j) > 0) {
                 Node *column = nullptr;
                 Node *tmp = nullptr;
@@ -289,11 +300,22 @@ void DLX::transformListToCurrentGrid() {
     }
 }
 
-// Mapper
+// Helpers
+DLX::Node *DLX::chooseNextColumn() {
+    Node *column = head->right;
+    for (Node *right = column->right; right != head; right = right->right) {
+        // Select if less values in current right column than in original right column
+        if (right->size < column->size) {
+            column = right;
+        }
+    }
+    return column;
+}
+
 void DLX::mapSolutionToGrid() {
     // Map found solution values
-    for (int i = 0; solution.at(i) != nullptr; ++i) {
-        sudoku[solution.at(i)->row.at(1) - 1][solution.at(i)->row.at(2) - 1] = solution.at(i)->row.at(0);
+    for (int i = 0; i < solutions.size(); ++i) {
+        sudoku[solutions.at(i)->row.at(1) - 1][solutions.at(i)->row.at(2) - 1] = solutions.at(i)->row.at(0);
     }
 
     // Map original values untouched by solution

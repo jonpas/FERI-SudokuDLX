@@ -30,7 +30,7 @@ public:
     ~DLX();
 
     bool solve();
-    Grid solvedGrid();
+    Grid solution();
 
 private:
     Grid sudoku;
@@ -45,7 +45,7 @@ private:
     // Links
     Node *head;
     QList<Node *> nodesToClean;
-    QList<Node *> solution;
+    QList<Node *> solutions;
     QList<Node *> origValues;
 
     // Matrix
@@ -56,6 +56,7 @@ private:
     void coverColumn(Node *column);
     // Reverse of cover
     void uncoverColumn(Node *column);
+    // Runs DLX search
     bool search(int depth = 0);
 
     // Exact Cover Builder
@@ -63,10 +64,13 @@ private:
     void buildSparseMatrix();
     // Builds a toroidal doubly linked list out of the sparse matrix
     void buildLinkedList();
-    // Covers values that are already present in the grid
-    void transformListToCurrentGrid();
+    // Covers columns of values that are already present in the grid
+    void coverGridValues();
 
-    // Mapper
+    // Helpers
+    // Chooses column with least number of nodes (deterministically) or the right one
+    // Choosing the column with the least number of nodes decreases the branching of the algorithm
+    Node *chooseNextColumn();
     // Maps found solution back to 2D grid
     void mapSolutionToGrid();
 };
