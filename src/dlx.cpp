@@ -44,6 +44,7 @@ bool DLX::solve() {
 }
 
 Grid DLX::solvedGrid() {
+    mapSolutionToGrid();
     return sudoku;
 }
 
@@ -75,16 +76,9 @@ void DLX::uncoverColumn(Node *column) {
 }
 
 bool DLX::search(int depth) {
-    // Map solution back to grid and exit if solution found
+    // Exit if solution found
     if (head->right == head) {
-        // Must map here as returning from recursion edits the links for possible further searches
-        mapSolutionToGrid();
         return true;
-    }
-
-    // Exit if maximum depth reached
-    if (depth >= MaxSearchDepth) {
-        return false;
     }
 
     // Choose column with smallest size (deterministically)
@@ -97,7 +91,6 @@ bool DLX::search(int depth) {
 
     coverColumn(column);
 
-    bool solved = false;
     for (Node *tmp = column->down; tmp != column; tmp = tmp->down) {
         solution[depth] = tmp;
 
@@ -105,10 +98,10 @@ bool DLX::search(int depth) {
             coverColumn(node->head);
         }
 
-        // Search next depth (recursion)
-        // Exit if failed
-        solved = search(depth + 1);
-        if (!solved) break;
+        // Search next depth (recursion) and exit if solved
+        if (search(depth + 1)) {
+            return true;
+        }
 
         tmp = solution[depth];
         solution[depth] = nullptr;
@@ -119,7 +112,8 @@ bool DLX::search(int depth) {
         }
     }
 
-    return solved;
+    // Not yet solved
+    return false;
 }
 
 // Exact Cover Builder
