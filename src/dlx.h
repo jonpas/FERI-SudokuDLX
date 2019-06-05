@@ -43,6 +43,7 @@ private:
     int columns;
 
     Node *head;
+    QList<Node *> nodesToClean;
 
     QList<Node *> solution;
     QList<Node *> origValues;

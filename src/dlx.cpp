@@ -29,6 +29,10 @@ DLX::DLX(Grid sudoku) : sudoku(sudoku) {
 }
 
 DLX::~DLX() {
+    for (auto &node : nodesToClean) {
+        delete node;
+    }
+
     delete head;
 }
 
@@ -184,7 +188,8 @@ void DLX::buildLinkedList() {
 
     // Create all column nodes
     for (int i = 0; i < columns; ++i) {
-        Node *node = new Node; // TODO delete
+        Node *node = new Node;
+        nodesToClean.append(node);
         node->size = 0;
         node->up = node;
         node->down = node;
@@ -215,7 +220,8 @@ void DLX::buildLinkedList() {
 
         for (int j = 0; j < columns; ++j, top = top->right) {
             if (matrix[i][j]) {
-                Node *node = new Node; // TODO delete
+                Node *node = new Node;
+                nodesToClean.append(node);
                 node->row = id;
 
                 if (prev == nullptr) {
