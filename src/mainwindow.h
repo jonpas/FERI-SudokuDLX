@@ -7,8 +7,8 @@
 
 #include "dlx.h"
 
-using SudokuGridRow = QList<QLineEdit *>;
-using SudokuGrid = QList<SudokuGridRow>;
+using UIGridRow = QList<QLineEdit *>;
+using UIGrid = QList<UIGridRow>;
 
 namespace Ui {
 class MainWindow;
@@ -25,14 +25,23 @@ public:
 
 private:
     Ui::MainWindow *ui;
-    SudokuGrid grid;
+    UIGrid grid;
 
     void generateGrid(int size);
-    void fillGridWithTestData();
-    // Converts Sudoku input grid (UI) to int grid (DLX)
-    Grid sudokuGridToGrid() const;
-    // Applies int grid (DLX) to Sudoku input grid (UI)
-    void gridToSudokuGrid(Grid sudoku);
+    void resetGrid();
+    // Solves current grid and saves benchmark in millseconds
+    bool solveGrid(double &bench);
+    void runTests();
+
+    // Converters
+    // Converts UI grid to int grid (DLX)
+    Grid UIGridToGrid() const;
+    // Applies int grid (DLX) to UI grid
+    void gridToUIGrid(Grid sudoku);
+    // Applies string grid (53.2.3...) to UI grid
+    void stringGridToUIGrid(QString gridStr, int size);
+    // Converts UI grid to string grid (53.2.3...)
+    QString UIGridToStringGrid();
 
     // UI input getters/setters
     int cellValue(QLineEdit *cell) const;
@@ -40,6 +49,7 @@ private:
 
 private slots:
     void onCellTextEdited(const QString &text);
-    void on_pushButtonReset_clicked();
+    void on_pushButtonImport_clicked();
     void on_pushButtonSolve_clicked();
+    void on_pushButtonReset_clicked();
 };

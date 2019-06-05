@@ -114,6 +114,8 @@ bool DLX::search(int depth) {
         }
     }
 
+    uncoverColumn(column);
+
     // Not yet solved
     return false;
 }

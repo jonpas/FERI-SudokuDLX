@@ -2,6 +2,7 @@
 #include "ui_mainwindow.h"
 
 #include <QValidator>
+#include <QInputDialog>
 
 #include <chrono>
 
@@ -13,7 +14,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     generateGrid(9);
 
     // Debug
-    fillGridWithTestData();
+    runTests();
 }
 
 MainWindow::~MainWindow() {
@@ -32,7 +33,7 @@ void MainWindow::generateGrid(int size) {
     // For later population (different order, as we add region by region)
     grid.reserve(size * size);
     for (int i = 0; i < size; ++i) {
-        grid.append(SudokuGridRow());
+        grid.append(UIGridRow());
     }
 
     // Add region by region and fill with cells
@@ -78,82 +79,104 @@ void MainWindow::generateGrid(int size) {
     }
 }
 
-void MainWindow::fillGridWithTestData() {
-    if (grid.size() == 9) {
-        // Exepcted results in comments on the right
-        Grid test = {
-            // Test cases from: http://sudopedia.enjoysudoku.com/Valid_Test_Cases.html
-            // Last empty square
-            /*
-            { 2,5,6,  4,8,9,  1,7,3 },
-            { 3,7,4,  6,1,5,  9,8,2 },
-            { 9,8,1,  7,2,3,  4,5,6 },
-
-            { 5,9,3,  2,7,4,  8,6,1 },
-            { 7,1,2,  8,0,6,  5,4,9 }, // 3
-            { 4,6,8,  5,9,1,  3,2,7 },
-
-            { 6,3,5,  1,4,7,  2,9,8 },
-            { 1,2,7,  9,5,8,  6,3,4 },
-            { 8,4,9,  3,6,2,  7,1,5 }
-            */
-
-            // Naked singles
-            /*
-            { 3,0,5,  4,2,0,  8,1,0 }, // 6, 7, 9
-            { 4,8,7,  9,0,1,  5,0,6 }, // 3, 2
-            { 0,2,9,  0,5,6,  3,7,4 }, // 1, 8
-
-            { 8,5,0,  7,9,3,  0,4,1 }, // 2, 6
-            { 6,1,3,  2,0,8,  9,5,7 }, // 4
-            { 0,7,4,  0,6,5,  2,8,0 }, // 9, 1, 3
-
-            { 2,4,1,  3,0,9,  0,6,5 }, // 8, 7
-            { 5,0,8,  6,7,0,  1,9,2 }, // 3, 4
-            { 0,9,6,  5,1,2,  4,0,8 }  // 7, 3
-            */
-
-            // Hidden singles (region, column or row have only one possible square remaining for given value)
-            /*
-            { 0,0,2,  0,3,0,  0,0,8 },
-            { 0,0,0,  0,0,8,  0,0,0 },
-            { 0,3,1,  0,2,0,  0,0,0 },
-
-            { 0,6,0,  0,5,0,  2,7,0 },
-            { 0,1,0,  0,0,0,  0,5,0 },
-            { 2,0,4,  0,6,0,  0,3,1 },
-
-            { 0,0,0,  0,8,0,  6,0,5 },
-            { 0,0,0,  0,0,0,  0,1,3 },
-            { 0,0,5,  3,1,0,  4,0,0 }
-            */
-
-            // Test case from https://github.com/KarlHajal/DLX-Sudoku-Solver
-            // Hard to solve
-
-            { 0,0,0,  0,0,0,  0,0,0 },
-            { 0,0,0,  0,0,3,  0,8,5 },
-            { 0,0,1,  0,2,0,  0,0,0 },
-
-            { 0,0,0,  5,0,7,  0,0,0 },
-            { 0,0,4,  0,0,0,  1,0,0 },
-            { 0,9,0,  0,0,0,  0,0,0 },
-
-            { 5,0,0,  0,0,0,  0,7,3 },
-            { 0,0,2,  0,1,0,  0,0,0 },
-            { 0,0,0,  0,4,0,  0,0,9 }
-
-        };
-
-        for (int i = 0; i < 9; ++i) {
-            for (int j = 0; j < 9; ++j) {
-                setCellValue(grid.at(i).at(j), test.at(i).at(j));
-            }
+void MainWindow::resetGrid() {
+    for (auto &row : grid) {
+        for (auto &cell : row) {
+            cell->setText("");
         }
     }
 }
 
-Grid MainWindow::sudokuGridToGrid() const {
+bool MainWindow::solveGrid(double &bench) {
+    // Convert input data to primitive data
+    // Instantiate DLX solver
+    DLX dlx(UIGridToGrid());
+
+    // Solve (convert problem to exact cover problem and solve with DLX)
+    auto benchStart = std::chrono::high_resolution_clock::now();
+    bool solved = dlx.solve();
+    auto benchEnd = std::chrono::high_resolution_clock::now();
+
+    if (solved) {
+        // Apply to UI
+        gridToUIGrid(dlx.solvedGrid());
+
+        bench = std::chrono::duration<double, std::milli>(benchEnd - benchStart).count();
+    }
+
+    return solved;
+}
+
+void MainWindow::runTests() {
+    if (grid.size() == 9) {
+        QList<std::tuple<QString, QString, QString>> tests;
+
+        // Test cases from: http://sudopedia.enjoysudoku.com/Valid_Test_Cases.html
+        tests.append({
+            "Completed Puzzle",
+            "974236158638591742125487936316754289742918563589362417867125394253649871491873625",
+            "974236158638591742125487936316754289742918563589362417867125394253649871491873625"
+        });
+        tests.append({
+            "Last Empty Square",
+            "2564891733746159829817234565932748617128.6549468591327635147298127958634849362715",
+            "256489173374615982981723456593274861712836549468591327635147298127958634849362715"
+        });
+        tests.append({
+            "Naked Singles",
+            "3.542.81.4879.15.6.29.5637485.793.416132.8957.74.6528.2413.9.655.867.192.965124.8",
+            "365427819487931526129856374852793641613248957974165283241389765538674192796512438"
+        });
+        tests.append({
+            "Hidden Singles",
+            "..2.3...8.....8....31.2.....6..5.27..1.....5.2.4.6..31....8.6.5.......13..531.4..",
+            "672435198549178362831629547368951274917243856254867931193784625486592713725316489"
+        });
+
+        // Test case from https://github.com/KarlHajal/DLX-Sudoku-Solver
+        tests.append({
+            "Hard to Brute-Force",
+            "..............3.85..1.2.......5.7.....4...1...9.......5......73..2.1........4...9",
+            "987654321246173985351928746128537694634892157795461832519286473472319568863745219"
+        });
+
+        // Test cases from http://magictour.free.fr/topn234
+        tests.append({
+            "Hard 1",
+            "7.8...3.....6.1...5.........4.....263...8.......1...9..9.2....4....7.5...........",
+            "768942315934651278512738649147593826329486157856127493693215784481379562275864931"
+        });
+
+        qInfo() << "Running Tests";
+        double benchSum = 0.0;
+        for (auto &test : tests) {
+            stringGridToUIGrid(std::get<1>(test), 9);
+
+            double bench;
+            bool solved = solveGrid(bench);
+            benchSum += bench;
+
+            if (solved) {
+                QString result = UIGridToStringGrid();
+
+                if (result == std::get<2>(test)) {
+                    qInfo() << "- Passed:" << std::get<0>(test) << "(in" << bench << "milliseconds)";
+                } else {
+                    qWarning() << "- Wrong:" << std::get<0>(test);
+                }
+            } else {
+                qCritical() << "- Failed:" << std::get<0>(test);
+            }
+
+            resetGrid();
+        }
+
+        qInfo() << "Average time:" << benchSum / tests.size() << "milliseconds";
+    }
+}
+
+// Converters
+Grid MainWindow::UIGridToGrid() const {
     Grid sudoku;
     sudoku.reserve(grid.size());
 
@@ -168,12 +191,43 @@ Grid MainWindow::sudokuGridToGrid() const {
     return sudoku;
 }
 
-void MainWindow::gridToSudokuGrid(Grid sudoku) {
+void MainWindow::gridToUIGrid(Grid sudoku) {
+    resetGrid();
+
     for (int i = 0; i < sudoku.size(); ++i) {
         for (int j = 0; j < sudoku.at(i).size(); ++j) {
             setCellValue(grid.at(i).at(j), sudoku.at(i).at(j));
         }
     }
+}
+
+void MainWindow::stringGridToUIGrid(QString gridStr, int size) {
+    int i = 0;
+    int j = 0;
+    for (auto &valueStr : gridStr) {
+        setCellValue(grid.at(i).at(j), valueStr.digitValue());
+
+        if (++j >= size) {
+            j = 0;
+            ++i;
+        }
+    }
+}
+
+QString MainWindow::UIGridToStringGrid() {
+    QString gridStr = "";
+    for (auto &row : grid) {
+        for (auto &cell : row) {
+            int value = cellValue(cell);
+            if (value < 1) {
+                gridStr.append(".");
+            } else {
+                gridStr.append(QString::number(value));
+            }
+        }
+    }
+
+    return gridStr;
 }
 
 // UI input getters/setters
@@ -206,31 +260,28 @@ void MainWindow::onCellTextEdited(const QString &text) {
     }
 }
 
-void MainWindow::on_pushButtonReset_clicked() {
-    for (auto &row : grid) {
-        for (auto &cell : row) {
-            cell->setText("");
-        }
+void MainWindow::on_pushButtonImport_clicked() {
+    bool ok;
+    QString text = QInputDialog::getText(this, "Sudoku (9x9) Import", "Input Sudoku (9x9) problem in format: 53.2..4...", QLineEdit::Normal, nullptr, &ok);
+    if (ok && !text.isEmpty() && text.size() == 9 * 9) {
+        stringGridToUIGrid(text, 9);
+        ui->statusBar->showMessage("Imported!");
+    } else {
+        ui->statusBar->showMessage("Failed to import! Wrong data.");
     }
 }
 
 void MainWindow::on_pushButtonSolve_clicked() {
-    // Convert input data to primitive data
-    // Instantiate DLX solver
-    DLX dlx(sudokuGridToGrid());
-
-    // Solve (convert problem to exact cover problem and solve with DLX)
-    auto benchStart = std::chrono::high_resolution_clock::now();
-    bool solved = dlx.solve();
-    auto benchEnd = std::chrono::high_resolution_clock::now();
+    double bench;
+    bool solved = solveGrid(bench);
 
     if (solved) {
-        // Apply to UI
-        gridToSudokuGrid(dlx.solvedGrid());
-
-        double bench = std::chrono::duration<double, std::milli>(benchEnd - benchStart).count();
         ui->statusBar->showMessage("Solved in " + QString::number(bench) + " milliseconds!");
     } else {
         ui->statusBar->showMessage("No solution!");
     }
+}
+
+void MainWindow::on_pushButtonReset_clicked() {
+    resetGrid();
 }
