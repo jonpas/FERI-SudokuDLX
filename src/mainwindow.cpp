@@ -228,8 +228,8 @@ void MainWindow::on_pushButtonSolve_clicked() {
         // Apply to UI
         gridToSudokuGrid(dlx.solvedGrid());
 
-        double bench = std::chrono::duration<double>(benchEnd - benchStart).count();
-        ui->statusBar->showMessage("Solved in " + QString::number(bench) + " seconds!");
+        double bench = std::chrono::duration<double, std::milli>(benchEnd - benchStart).count();
+        ui->statusBar->showMessage("Solved in " + QString::number(bench) + " milliseconds!");
     } else {
         ui->statusBar->showMessage("No solution!");
     }
