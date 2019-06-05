@@ -77,6 +77,7 @@ void DLX::uncoverColumn(Node *column) {
 bool DLX::search(int depth) {
     // Map solution back to grid and exit if solution found
     if (head->right == head) {
+        // Must map here as returning from recursion edits the links for possible further searches
         mapSolutionToGrid();
         return true;
     }

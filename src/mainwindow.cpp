@@ -13,7 +13,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     generateGrid(9);
 
     // Debug
-    fillGridWithTestData();
+    //fillGridWithTestData();
 }
 
 MainWindow::~MainWindow() {
@@ -23,27 +23,26 @@ MainWindow::~MainWindow() {
 void MainWindow::generateGrid(int size) {
     if (size != 9) {
         qCritical() << "Undefined behaviour for grid sizes other than 9!";
-        return;
     }
 
-    int sectionSize = size / 3;
+    int regionSize = size / 3;
     const QIntValidator *validator = new QIntValidator(1, size, this);
 
     // Initialize all grid rows
-    // For later population (different order, as we add section by section)
+    // For later population (different order, as we add region by region)
     grid.reserve(size * size);
     for (int i = 0; i < size; ++i) {
         grid.append(SudokuGridRow());
     }
 
-    // Add section by section and fill with cells
+    // Add region by region and fill with cells
     // to achieve wanted styling
-    for (int si = 0; si < sectionSize; ++si) {
-        for (int sj = 0; sj < sectionSize; ++sj) {
+    for (int si = 0; si < regionSize; ++si) {
+        for (int sj = 0; sj < regionSize; ++sj) {
             QFrame *widget = new QFrame;
             widget->setFrameShape(QFrame::Box);
 
-            int widgetSize = CellSize * sectionSize + 2; // 2 for border spaces
+            int widgetSize = CellSize * regionSize + 2; // 2 for border spaces
             widget->setMinimumSize(widgetSize, widgetSize);
             widget->setMaximumSize(widgetSize, widgetSize);
 
@@ -51,8 +50,8 @@ void MainWindow::generateGrid(int size) {
             gridLayout->setSpacing(0);
             gridLayout->setMargin(0);
 
-            for (int i = 0; i < sectionSize; ++i) {
-                for (int j = 0; j < sectionSize; ++j) {
+            for (int i = 0; i < regionSize; ++i) {
+                for (int j = 0; j < regionSize; ++j) {
                     QLineEdit *cell = new QLineEdit(this);
                     cell->setAlignment(Qt::AlignCenter);
                     cell->setFont(QFont(cell->font().family(), CellSize / 2));
@@ -64,10 +63,10 @@ void MainWindow::generateGrid(int size) {
 
                     gridLayout->addWidget(cell, i, j);
 
-                    // Calculate row index from section and cell positions
-                    // We add section by section and fill section as it's created
+                    // Calculate row index from region and cell positions
+                    // We add region by region and fill region as it's created
                     // but we have to add to the row in the entire grid
-                    int rowIndex = i + si * sectionSize;
+                    int rowIndex = i + si * regionSize;
                     grid[rowIndex].append(cell);
 
                     connect(cell, &QLineEdit::textEdited, this, &MainWindow::onCellTextEdited);
@@ -81,7 +80,57 @@ void MainWindow::generateGrid(int size) {
 
 void MainWindow::fillGridWithTestData() {
     if (grid.size() == 9) {
+        // Exepcted results in comments on the right
         int test[9][9] = {
+            // Test cases from: http://sudopedia.enjoysudoku.com/Valid_Test_Cases.html
+            // Last empty square
+            /*
+            { 2,5,6,  4,8,9,  1,7,3 },
+            { 3,7,4,  6,1,5,  9,8,2 },
+            { 9,8,1,  7,2,3,  4,5,6 },
+
+            { 5,9,3,  2,7,4,  8,6,1 },
+            { 7,1,2,  8,0,6,  5,4,9 }, // 3
+            { 4,6,8,  5,9,1,  3,2,7 },
+
+            { 6,3,5,  1,4,7,  2,9,8 },
+            { 1,2,7,  9,5,8,  6,3,4 },
+            { 8,4,9,  3,6,2,  7,1,5 }
+            */
+
+            // Naked singles
+            /*
+            { 3,0,5,  4,2,0,  8,1,0 }, // 6, 7, 9
+            { 4,8,7,  9,0,1,  5,0,6 }, // 3, 2
+            { 0,2,9,  0,5,6,  3,7,4 }, // 1, 8
+
+            { 8,5,0,  7,9,3,  0,4,1 }, // 2, 6
+            { 6,1,3,  2,0,8,  9,5,7 }, // 4
+            { 0,7,4,  0,6,5,  2,8,0 }, // 9, 1, 3
+
+            { 2,4,1,  3,0,9,  0,6,5 }, // 8, 7
+            { 5,0,8,  6,7,0,  1,9,2 }, // 3, 4
+            { 0,9,6,  5,1,2,  4,0,8 }  // 7, 3
+            */
+
+            // Hidden singles (region, column or row have only one possible square remaining for given value)
+            /*
+            { 0,0,2,  0,3,0,  0,0,8 },
+            { 0,0,0,  0,0,8,  0,0,0 },
+            { 0,3,1,  0,2,0,  0,0,0 },
+
+            { 0,6,0,  0,5,0,  2,7,0 },
+            { 0,1,0,  0,0,0,  0,5,0 },
+            { 2,0,4,  0,6,0,  0,3,1 },
+
+            { 0,0,0,  0,8,0,  6,0,5 },
+            { 0,0,0,  0,0,0,  0,1,3 },
+            { 0,0,5,  3,1,0,  4,0,0 }
+            */
+
+            // Test case from https://github.com/KarlHajal/DLX-Sudoku-Solver
+            // Hard to solve
+
             { 0,0,0,  0,0,0,  0,0,0 },
             { 0,0,0,  0,0,3,  0,8,5 },
             { 0,0,1,  0,2,0,  0,0,0 },
@@ -93,6 +142,7 @@ void MainWindow::fillGridWithTestData() {
             { 5,0,0,  0,0,0,  0,7,3 },
             { 0,0,2,  0,1,0,  0,0,0 },
             { 0,0,0,  0,4,0,  0,0,9 }
+
         };
 
         for (int i = 0; i < 9; ++i) {
@@ -129,7 +179,7 @@ void MainWindow::gridToSudokuGrid(Grid sudoku) {
 // UI input getters/setters
 int MainWindow::cellValue(QLineEdit *cell) const {
     if (cell->text() == "") {
-        return 0;
+        return -1;
     }
     return cell->text().toInt();
 }
@@ -148,7 +198,7 @@ void MainWindow::onCellTextEdited(const QString &text) {
     if (text.toInt() < 1) {
         for (auto &row : grid) {
             for (auto &cell : row) {
-                if (cellValue(cell) != 0) {
+                if (cellValue(cell) == 0) {
                     cell->setText("1");
                 }
             }
