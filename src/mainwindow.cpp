@@ -13,7 +13,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     generateGrid(9);
 
     // Debug
-    //fillGridWithTestData();
+    fillGridWithTestData();
 }
 
 MainWindow::~MainWindow() {
@@ -81,7 +81,7 @@ void MainWindow::generateGrid(int size) {
 void MainWindow::fillGridWithTestData() {
     if (grid.size() == 9) {
         // Exepcted results in comments on the right
-        int test[9][9] = {
+        Grid test = {
             // Test cases from: http://sudopedia.enjoysudoku.com/Valid_Test_Cases.html
             // Last empty square
             /*
@@ -147,7 +147,7 @@ void MainWindow::fillGridWithTestData() {
 
         for (int i = 0; i < 9; ++i) {
             for (int j = 0; j < 9; ++j) {
-                setCellValue(grid[i][j], test[i][j]);
+                setCellValue(grid.at(i).at(j), test.at(i).at(j));
             }
         }
     }
@@ -170,8 +170,8 @@ Grid MainWindow::sudokuGridToGrid() const {
 
 void MainWindow::gridToSudokuGrid(Grid sudoku) {
     for (int i = 0; i < sudoku.size(); ++i) {
-        for (int j = 0; j < sudoku[i].size(); ++j) {
-            setCellValue(grid[i][j], sudoku[i][j]);
+        for (int j = 0; j < sudoku.at(i).size(); ++j) {
+            setCellValue(grid.at(i).at(j), sudoku.at(i).at(j));
         }
     }
 }

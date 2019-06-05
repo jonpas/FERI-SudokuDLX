@@ -2,7 +2,7 @@
 
 #include <QObject>
 
-#include <QDebug>
+// Use QList::at() wherever possible, as it is guaranteed constant time (QList::operator[] is not)
 
 using GridRow = QList<int>;
 using Grid = QList<GridRow>;

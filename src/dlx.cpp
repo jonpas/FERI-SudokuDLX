@@ -26,6 +26,8 @@ DLX::DLX(Grid sudoku) : sudoku(sudoku) {
         }
         matrix.append(row);
     }
+
+    nodesToClean.reserve(columns * 10); // Approximation
 }
 
 DLX::~DLX() {
@@ -103,7 +105,7 @@ bool DLX::search(int depth) {
             return true;
         }
 
-        tmp = solution[depth];
+        tmp = solution.at(depth);
         solution[depth] = nullptr;
         column = tmp->head;
 
@@ -223,7 +225,7 @@ void DLX::buildLinkedList() {
         }
 
         for (int j = 0; j < columns; ++j, top = top->right) {
-            if (matrix[i][j]) {
+            if (matrix.at(i).at(j)) {
                 Node *node = new Node;
                 nodesToClean.append(node);
                 node->row = id;
@@ -257,14 +259,16 @@ void DLX::buildLinkedList() {
 void DLX::transformListToCurrentGrid() {
     for (int i = 0; i < size; ++i) {
         for (int j = 0; j < size; ++j) {
-            if (sudoku[i][j] > 0) {
+            if (sudoku.at(i).at(j) > 0) {
                 Node *column = nullptr;
                 Node *tmp = nullptr;
 
                 bool exit = false;
                 for (column = head->right; column != head; column = column->right) {
                     for (tmp = column->down; tmp != column; tmp = tmp->down) {
-                        if (tmp->row[0] == sudoku[i][j] && tmp->row[1] - 1 == i && tmp->row[2] - 1 == j) {
+                        if (tmp->row.at(0) == sudoku.at(i).at(j)
+                                && tmp->row.at(1) - 1 == i
+                                && tmp->row.at(2) - 1 == j) {
                             exit = true;
                             break;
                         }
@@ -286,12 +290,12 @@ void DLX::transformListToCurrentGrid() {
 // Mapper
 void DLX::mapSolutionToGrid() {
     // Map found solution values
-    for (int i = 0; solution[i] != nullptr; ++i) {
-        sudoku[solution[i]->row[1] - 1][solution[i]->row[2] - 1] = solution[i]->row[0];
+    for (int i = 0; solution.at(i) != nullptr; ++i) {
+        sudoku[solution.at(i)->row.at(1) - 1][solution.at(i)->row.at(2) - 1] = solution.at(i)->row.at(0);
     }
 
     // Map original values untouched by solution
     for (int i = 0; i < origValues.size(); ++i) {
-        sudoku[origValues[i]->row[1] - 1][origValues[i]->row[2] - 1] = origValues[i]->row[0];
+        sudoku[origValues.at(i)->row.at(1) - 1][origValues.at(i)->row.at(2) - 1] = origValues.at(i)->row.at(0);
     }
 }
