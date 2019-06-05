@@ -23,16 +23,16 @@ public:
 
 private:
     Ui::MainWindow *ui;
-    QList<QWidget *> sudokuGridWidgets;
 
     UIGrid grid;
 
     bool generateGrid(int size);
+    void deleteGrid();
     void resetGrid();
     // Solves current grid and saves benchmark in millseconds
     bool solveGrid(double &bench);
     void runTests();
-    void runTest(std::tuple<QString, QString, QString> &test, double &benchSum, bool &allPassed);
+    void runTest(const std::tuple<QString, QString, QString> &test, double &benchSum, bool &allPassed);
 
     // Converters
     // Converts UI grid to int grid (DLX)

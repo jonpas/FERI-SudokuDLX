@@ -16,7 +16,8 @@ SOURCES += \
 
 HEADERS += \
     dlx.h \
-    mainwindow.h
+    mainwindow.h \
+    tests.h
 
 FORMS += \
     mainwindow.ui
