@@ -187,7 +187,6 @@ void MainWindow::runTest(const std::tuple<QString, QString, QString> &test, doub
             qInfo() << "- Passed:" << std::get<0>(test) << "(in" << bench << "milliseconds)";
         } else {
             qWarning() << "O Wrong:" << std::get<0>(test) << "(in" << bench << "milliseconds)";
-            qInfo() << "  -> Correct:" << result;
             allPassed = false;
         }
     } else {
