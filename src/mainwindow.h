@@ -50,6 +50,7 @@ private:
 
 private slots:
     void onCellTextEdited(const QString &text);
+    void on_spinBoxSize_valueChanged(int size);
     void on_pushButtonImport_clicked();
     void on_pushButtonSolve_clicked();
     void on_pushButtonReset_clicked();

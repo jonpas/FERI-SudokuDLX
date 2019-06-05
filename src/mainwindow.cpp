@@ -12,8 +12,8 @@
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow) {
     ui->setupUi(this);
 
-    // Unit tests
-    runTests();
+    // Tests
+    //runTests();
 
     if (!generateGrid(9)) {
         qCritical() << "Invalid grid size! Only NxN grids supported.";
@@ -48,9 +48,9 @@ bool MainWindow::generateGrid(int size) {
     int cellSize = 9 * 3 * 2;
     // Scale for other sizes
     if (size < 9) {
-        cellSize *= regionsPerRow;
+        cellSize = static_cast<int>(cellSize * size * 0.565);
     } else if (size > 9) {
-        cellSize /= static_cast<int>(regionsPerRow / 2.0);
+        cellSize = static_cast<int>(cellSize / (size * 0.109));
     }
 
     const QIntValidator *validator = new QIntValidator(1, size, this);
@@ -285,6 +285,29 @@ void MainWindow::onCellTextEdited(const QString &text) {
                 }
             }
         }
+    }
+}
+
+void MainWindow::on_spinBoxSize_valueChanged(int size) {
+    // Set value by supported steps (varied)
+    if (size < grid.size()) {
+        QMap<int, int> steps = { {25, 16}, {16, 9}, {9, 4} };
+        size = steps[size + 1];
+    } else if (size > grid.size()) {
+        QMap<int, int> steps = { {4, 9}, {9, 16}, {16, 25} };
+        size = steps[size - 1];
+    }
+    ui->spinBoxSize->blockSignals(true);
+    ui->spinBoxSize->setValue(size);
+    ui->spinBoxSize->blockSignals(false);
+
+    // Pretty size display ('9x9' instead of '9')
+    ui->spinBoxSize->setSuffix("x" + QString::number(size));
+
+    if (generateGrid(size)) {
+        ui->statusBar->showMessage("Resized!");
+    } else {
+        ui->statusBar->showMessage("Invalid grid size! Only NxN grids supported.");
     }
 }
 
