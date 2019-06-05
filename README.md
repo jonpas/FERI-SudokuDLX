@@ -4,14 +4,17 @@
 
 Solves Sudoku using dancing links technique, an efficient implementation of [Algorithm X](https://en.wikipedia.org/wiki/Knuth%27s_Algorithm_X), as suggested by Donald Knuth.
 
-Thanks to [KarlHajal/DLX-Sudoku-Solver](https://github.com/KarlHajal/DLX-Sudoku-Solver) for a high-performance C-like implementation that served as a reference for this implementation!
+Thanks to [KarlHajal/DLX-Sudoku-Solver](https://github.com/KarlHajal/DLX-Sudoku-Solver) for a high-performance C-like implementation that served as the most important reference for this implementation. Additional thanks to [Jonathan Chu's Java Sudoku Solver and paper](https://www.ocf.berkeley.edu/~jchu/publicportal/sudoku/sudoku.paper.html) for another important reference.
 
 ### Features
 
 - Sudoku Solver using Dancing Links Algorithm
 - Sudoku Grid (9x9)
-  - Manual Input _(validated)_
-  - Test Cases _(in-code)_
+  - Manual Input _(non-validated - by design for DLX error testing)_
+  - Import Dotted String Format _(size-validated only)_
+    - `53.2..4...` _(length: 81)_
+  - Test Cases _(in-code on start)_
+  - Benchmark _(build & search)_
 
 ### Setup
 
@@ -24,3 +27,8 @@ Thanks to [KarlHajal/DLX-Sudoku-Solver](https://github.com/KarlHajal/DLX-Sudoku-
 - [Dancing Links, _Donald E. Knuth_, Stanford University paper](https://www.ocf.berkeley.edu/~jchu/publicportal/sudoku/0011047.pdf)
 - [A Sudoku Solver in Java implementing Knuth’s Dancing Links Algorithm](https://www.ocf.berkeley.edu/~jchu/publicportal/sudoku/sudoku.paper.html)
 - [Zendoku puzzle generation](http://garethrees.org/2007/06/10/zendoku-generation/)
+
+**Test Cases:**
+- [Sudopedia: Test Cases](http://sudopedia.enjoysudoku.com/Test_Cases.html)
+- [Wikipedia: Sudoku solving algorithms](https://en.wikipedia.org/wiki/Sudoku_solving_algorithms)
+- [Computing Magic Knight Tours](http://magictour.free.fr/topn234)

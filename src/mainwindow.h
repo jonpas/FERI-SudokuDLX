@@ -38,9 +38,9 @@ private:
     Grid UIGridToGrid() const;
     // Applies int grid (DLX) to UI grid
     void gridToUIGrid(Grid sudoku);
-    // Applies string grid (53.2.3...) to UI grid
+    // Applies string grid (53.2..4...) to UI grid
     void stringGridToUIGrid(QString gridStr, int size);
-    // Converts UI grid to string grid (53.2.3...)
+    // Converts UI grid to string grid (53.2..4...)
     QString UIGridToStringGrid();
 
     // UI input getters/setters
