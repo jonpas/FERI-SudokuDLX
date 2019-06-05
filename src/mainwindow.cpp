@@ -13,7 +13,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWi
     ui->setupUi(this);
 
     // Tests
-    //runTests();
+    runTests();
 
     if (!generateGrid(9)) {
         qCritical() << "Invalid grid size! Only NxN grids supported.";
