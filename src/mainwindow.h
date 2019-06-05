@@ -18,20 +18,21 @@ class MainWindow : public QMainWindow {
     Q_OBJECT
 
 public:
-    static const int CellSize;
-
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
 private:
     Ui::MainWindow *ui;
+    QList<QWidget *> sudokuGridWidgets;
+
     UIGrid grid;
 
-    void generateGrid(int size);
+    bool generateGrid(int size);
     void resetGrid();
     // Solves current grid and saves benchmark in millseconds
     bool solveGrid(double &bench);
     void runTests();
+    void runTest(std::tuple<QString, QString, QString> &test, double &benchSum, bool &allPassed);
 
     // Converters
     // Converts UI grid to int grid (DLX)
@@ -39,7 +40,7 @@ private:
     // Applies int grid (DLX) to UI grid
     void gridToUIGrid(Grid sudoku);
     // Applies string grid (53.2..4...) to UI grid
-    void stringGridToUIGrid(QString gridStr, int size);
+    void stringGridToUIGrid(QString gridStr);
     // Converts UI grid to string grid (53.2..4...)
     QString UIGridToStringGrid();
 
