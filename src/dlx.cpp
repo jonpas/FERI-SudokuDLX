@@ -283,6 +283,7 @@ void DLX::transformListToCurrentGrid() {
     }
 }
 
+// Mapper
 void DLX::mapSolutionToGrid() {
     // Map found solution values
     for (int i = 0; solution[i] != nullptr; ++i) {

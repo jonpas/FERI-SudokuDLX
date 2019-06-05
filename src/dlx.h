@@ -42,12 +42,13 @@ private:
     int rows;
     int columns;
 
+    // Links
     Node *head;
     QList<Node *> nodesToClean;
-
     QList<Node *> solution;
     QList<Node *> origValues;
 
+    // Matrix
     SparseMatrix matrix;
 
     // DLX
@@ -57,7 +58,6 @@ private:
     void uncoverColumn(Node *column);
     bool search(int depth = 0);
 
-
     // Exact Cover Builder
     // Builds initial matrix containing all possibilities
     void buildSparseMatrix();
@@ -66,6 +66,7 @@ private:
     // Covers values that are already present in the grid
     void transformListToCurrentGrid();
 
+    // Mapper
     // Maps found solution back to 2D grid
     void mapSolutionToGrid();
 };
