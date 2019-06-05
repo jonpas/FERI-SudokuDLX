@@ -182,7 +182,7 @@ void MainWindow::runTests() {
             "any" // 500+ solutions
         });
         tests.append({
-            "Duplicate Given - Box",
+            "Duplicate Given - Region",
             "..9.7...5..21..9..1...28....7...5..1..851.....5....3.......3..68........21.....87",
             "none" // No solution
         });
@@ -202,7 +202,7 @@ void MainWindow::runTests() {
             "none" // No solution
         });
         tests.append({
-            "Unsolvable Box",
+            "Unsolvable Region",
             ".9.3....1....8..46......8..4.5.6..3...32756...6..1.9.4..1......58..2....2....7.6.",
             "none" // No solution
         });
@@ -273,6 +273,7 @@ void MainWindow::runTests() {
 
         qInfo() << "Running Tests";
         double benchSum = 0.0;
+        bool allPassed = true;
 
         double bench;
         QString result;
@@ -283,22 +284,28 @@ void MainWindow::runTests() {
             benchSum += bench;
 
             bool noSolution = std::get<2>(test) == "none";
-            if (solved || (!solved && noSolution)) {
+            if ((solved && !noSolution) || (!solved && noSolution)) {
                 result = UIGridToStringGrid();
 
                 if (result == std::get<2>(test) || std::get<2>(test) == "any" || noSolution) {
                     qInfo() << "- Passed:" << std::get<0>(test) << "(in" << bench << "milliseconds)";
                 } else {
-                    qWarning() << "- Wrong:" << std::get<0>(test) << "(in" << bench << "milliseconds)";
-                    qInfo() << "  -> Correct:" << result;
+                    qWarning() << "O Wrong:" << std::get<0>(test) << "(in" << bench << "milliseconds)";
+                    allPassed = false;
                 }
             } else {
-                qCritical() << "- Failed:" << std::get<0>(test) << "(in" << bench << "milliseconds)";
+                qCritical() << "X Failed:" << std::get<0>(test) << "(in" << bench << "milliseconds)";
+                allPassed = false;
             }
 
             resetGrid();
         }
 
+        if (allPassed) {
+            qInfo() << "All tests PASSED!";
+        } else {
+            qInfo() << "Some tests FAILED or gave WRONG results!";
+        }
         qInfo() << "Average time:" << benchSum / tests.size() << "milliseconds";
     }
 }
