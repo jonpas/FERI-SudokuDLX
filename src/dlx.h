@@ -2,8 +2,13 @@
 
 #include <QObject>
 
+#include <QDebug>
+
 using GridRow = QList<int>;
 using Grid = QList<GridRow>;
+
+using SparseRow = QList<bool>;
+using SparseMatrix = QList<SparseRow>;
 
 class DLX {
 public:
@@ -18,10 +23,11 @@ public:
         Node *right;
 
         int size; // Column header
-        int row[3]; // Row identification for mapping solutions to sudoku grid [candidate, row, column]
+        GridRow row = {0, 0, 0}; // Row identification for mapping solutions to sudoku grid [candidate, row, column]
     };
 
     DLX(Grid sudoku);
+    ~DLX();
 
     bool solve();
     Grid solvedGrid();
@@ -29,10 +35,19 @@ public:
 private:
     Grid sudoku;
 
-    Node *headNode;
+    // Size and variations
+    int size;
+    int sizeSq;
+    int sizeSqrt;
+    int rows;
+    int columns;
+
+    Node *head;
 
     QList<Node *> solution;
     QList<Node *> origValues;
+
+    SparseMatrix matrix;
 
     // DLX
     // Remove a column from the matrix
