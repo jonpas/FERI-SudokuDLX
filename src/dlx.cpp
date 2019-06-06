@@ -9,8 +9,8 @@ DLX::DLX(Grid sudoku) : sudoku(sudoku) {
     size = sudoku.size();
     sizeSq = size * size;
     sizeSqrt = static_cast<int>(sqrt(size));
-    rows = size * size * size;
-    columns = 4 * size * size;
+    rows = sizeSq * size;
+    columns = 4 * sizeSq;
 
     // Initialize
     nodesToClean.reserve(columns * (size + 1)); // 9x9 => 324 * (9 + 1)
