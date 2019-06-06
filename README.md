@@ -26,7 +26,6 @@ Thanks to [KarlHajal/DLX-Sudoku-Solver](https://github.com/KarlHajal/DLX-Sudoku-
 - [KarlHajal/DLX-Sudoku-Solver (reference C++ implementation)](https://github.com/KarlHajal/DLX-Sudoku-Solver)
 - [Dancing Links, _Donald E. Knuth_, Stanford University paper](https://www.ocf.berkeley.edu/~jchu/publicportal/sudoku/0011047.pdf)
 - [A Sudoku Solver in Java implementing Knuth’s Dancing Links Algorithm](https://www.ocf.berkeley.edu/~jchu/publicportal/sudoku/sudoku.paper.html)
-- [Zendoku puzzle generation](http://garethrees.org/2007/06/10/zendoku-generation/)
 
 **Test Cases:**
 - [Sudopedia: Test Cases](http://sudopedia.enjoysudoku.com/Test_Cases.html)
