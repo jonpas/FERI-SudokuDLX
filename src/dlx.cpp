@@ -20,6 +20,7 @@ DLX::DLX(Grid sudoku) : sudoku(sudoku) {
     matrix.reserve(rows);
     for (int i = 0; i < rows; ++i) {
         SparseRow row = SparseRow();
+        row.reserve(columns);
         for (int j = 0; j < columns; ++j) {
             row.append(false);
         }
