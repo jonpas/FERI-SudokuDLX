@@ -3,13 +3,14 @@
 #include <QList>
 #include <QString>
 
-#include <tuple>
-
-using TestCase = std::tuple<QString, QString, QString>; // [title, input, expected result]
-using TestList = QList<TestCase>;
-
 namespace Tests {
-    static const TestList s9x9 = {
+    struct Test {
+        QString title;
+        QString input;
+        QString expectedResult;
+    };
+
+    static const QList<Test> s9x9 = {
         // Test cases from: http://sudopedia.enjoysudoku.com/Valid_Test_Cases.html
         {
             "Completed Puzzle",
@@ -176,7 +177,7 @@ namespace Tests {
         }
     };
 
-    static const TestList s16x16 = {
+    static const QList<Test> s16x16 = {
         // Test cases from http://magictour.free.fr/top44
         {
             "Hard 1",
@@ -205,7 +206,7 @@ namespace Tests {
         },
     };
 
-    int size() {
+    inline int size() {
         return s9x9.size() + s16x16.size();
     }
 }

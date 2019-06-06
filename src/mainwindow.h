@@ -6,6 +6,7 @@
 #include <QDebug>
 
 #include "dlx.h"
+#include "tests.h"
 
 using UIGridRow = QList<QLineEdit *>;
 using UIGrid = QList<UIGridRow>;
@@ -32,7 +33,7 @@ private:
     // Solves current grid and saves benchmark in millseconds
     bool solveGrid(double &bench);
     void runTests();
-    void runTest(const std::tuple<QString, QString, QString> &test, double &benchSum, bool &allPassed);
+    void runTest(const Tests::Test &test, double &benchSum, bool &allPassed);
 
     // Converters
     // Converts UI grid to int grid (DLX)

@@ -7,8 +7,6 @@
 #include <cmath>
 #include <chrono>
 
-#include "tests.h"
-
 MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent), ui(new Ui::MainWindow) {
     ui->setupUi(this);
 
@@ -172,25 +170,25 @@ void MainWindow::runTests() {
     qInfo() << "Average time:" << benchSum / Tests::size() << "milliseconds";
 }
 
-void MainWindow::runTest(const std::tuple<QString, QString, QString> &test, double &benchSum, bool &allPassed) {
-    stringGridToUIGrid(std::get<1>(test));
+void MainWindow::runTest(const Tests::Test &test, double &benchSum, bool &allPassed) {
+    stringGridToUIGrid(test.input);
 
     double bench = 0.0;
     bool solved = solveGrid(bench);
     benchSum += bench;
 
-    bool noSolution = std::get<2>(test) == "none";
+    bool noSolution = test.expectedResult == "none";
     if ((solved && !noSolution) || (!solved && noSolution)) {
         QString result = UIGridToStringGrid();
 
-        if (result == std::get<2>(test) || std::get<2>(test) == "any" || noSolution) {
-            qInfo() << "- Passed:" << std::get<0>(test) << "(in" << bench << "milliseconds)";
+        if (result == test.expectedResult || test.expectedResult == "any" || noSolution) {
+            qInfo() << "- Passed:" << test.title << "(in" << bench << "milliseconds)";
         } else {
-            qWarning() << "O Wrong:" << std::get<0>(test) << "(in" << bench << "milliseconds)";
+            qWarning() << "O Wrong:" << test.title << "(in" << bench << "milliseconds)";
             allPassed = false;
         }
     } else {
-        qCritical() << "X Failed:" << std::get<0>(test) << "(in" << bench << "milliseconds)";
+        qCritical() << "X Failed:" << test.title << "(in" << bench << "milliseconds)";
         allPassed = false;
     }
 }
